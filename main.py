@@ -39,9 +39,10 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
+        obj = {'notes':'Returns info about the sunrise/sunset for a location. All values are in UTC hours', 'credits':'Uses the Python port of sunsetrise.c: https://github.com/mabroor/suncal Host set up by Jeff Easter (http://feesta.com)'}
+
         arguments = self.request.arguments
         if 'lat' in arguments and 'lon' in arguments:
-            obj = {}
 
             lat = float(self.get_argument('lat'))
             lon = float(self.get_argument('lon'))
@@ -74,7 +75,11 @@ class MainHandler(tornado.web.RequestHandler):
 
             self.write(json.dumps(obj))
         else:
-            self.write(json.dumps({'status':'error', 'message':'missing lat or lon'}))
+            obj['status'] = 'error'
+            obj['message'] = 'missing lat or lon'
+            obj['arguments required'] = 'lat, lon'
+            obj['arguments optional'] = 'extended, year, month, day'
+            self.write(json.dumps(obj))
 
 # RAMMING SPEEEEEEED!
 def main():
