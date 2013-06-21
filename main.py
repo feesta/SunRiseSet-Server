@@ -14,6 +14,10 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.options
 import tornado.web
+from tornado import autoreload, websocket
+
+from Sun import Sun
+import simplejson as json
 
 # import and define tornado-y things
 from tornado.options import define
@@ -24,7 +28,8 @@ define("port", default=5000, help="run on the given port", type=int)
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            (r"/([^/]+)?", MainHandler)
+            (r"/", MainHandler),
+            (r"/sun", SunHandler)
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -36,7 +41,7 @@ class Application(tornado.web.Application):
 
 # the main page
 class MainHandler(tornado.web.RequestHandler):
-    def get(self, q):
+    def get(self):
         if 'GOOGLEANALYTICSID' in os.environ:
             google_analytics_id = os.environ['GOOGLEANALYTICSID']
         else:
@@ -49,6 +54,43 @@ class MainHandler(tornado.web.RequestHandler):
             google_analytics_id=google_analytics_id,
         )
 
+class SunHandler(tornado.web.RequestHandler):
+    def get(self):
+        arguments = self.request.arguments
+        if 'lat' in arguments and 'lon' in arguments:
+            lat = float(self.get_argument('lat'))
+            lon = float(self.get_argument('lon'))
+            extended = True if 'extended' in arguments else False
+                
+
+            year = 2013
+            month = 6
+            day = 21
+            obj = {}
+            obj["extended"] = extended
+            obj["lat"] = lat
+            obj["lon"] = lon
+
+            obj["year"] = year
+            obj["month"] = month
+            obj["day"] = day
+
+            obj["sunrise"], obj["sunset"] = Sun.sunRiseSet(year, month, day, lon, lat)
+            obj["sunRiseSet"] = Sun.sunRiseSet(year, month, day, lon, lat)
+            obj["dayLength"] = Sun.dayLength(year, month, day, lon, lat)
+
+            if extended is True:
+                obj["aviationTime"] = Sun.aviationTime(year, month, day, lon, lat)
+                obj["civilTwilight"] = Sun.civilTwilight(year, month, day, lon, lat)
+                obj["dayCivilTwilightLength"] = Sun.dayCivilTwilightLength(year, month, day, lon, lat)
+                obj["nauticalTwilight"] = Sun.nauticalTwilight(year, month, day, lon, lat)
+                obj["dayNauticalTwilightLength"] = Sun.dayNauticalTwilightLength(year, month, day, lon, lat)
+                obj["astronomicalTwilight"] = Sun.astronomicalTwilight(year, month, day, lon, lat)
+                obj["dayAstronomicalTwilightLength"] = Sun.dayAstronomicalTwilightLength(year, month, day, lon, lat)
+
+            self.write(json.dumps(obj))
+        else:
+            self.write('missing lat or lon')
 
 # RAMMING SPEEEEEEED!
 def main():
@@ -57,7 +99,9 @@ def main():
     http_server.listen(tornado.options.options.port)
 
     # start it up
-    tornado.ioloop.IOLoop.instance().start()
+    ioloop = tornado.ioloop.IOLoop.instance()
+    autoreload.start(ioloop)
+    ioloop.start()
 
 
 if __name__ == "__main__":
