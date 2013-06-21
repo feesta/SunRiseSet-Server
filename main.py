@@ -18,6 +18,7 @@ from tornado import autoreload, websocket
 
 from Sun import Sun
 import simplejson as json
+import datetime
 
 # import and define tornado-y things
 from tornado.options import define
@@ -28,49 +29,32 @@ define("port", default=5000, help="run on the given port", type=int)
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            (r"/", MainHandler),
-            (r"/sun", SunHandler)
+            (r"/", MainHandler)
         ]
         settings = dict(
-            template_path=os.path.join(os.path.dirname(__file__), "templates"),
-            static_path=os.path.join(os.path.dirname(__file__), "static"),
             debug=True,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
 
 
-# the main page
 class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        if 'GOOGLEANALYTICSID' in os.environ:
-            google_analytics_id = os.environ['GOOGLEANALYTICSID']
-        else:
-            google_analytics_id = False
-
-        self.render(
-            "main.html",
-            page_title='Heroku Funtimes',
-            page_heading='Hi!',
-            google_analytics_id=google_analytics_id,
-        )
-
-class SunHandler(tornado.web.RequestHandler):
     def get(self):
         arguments = self.request.arguments
         if 'lat' in arguments and 'lon' in arguments:
+            obj = {}
+
             lat = float(self.get_argument('lat'))
             lon = float(self.get_argument('lon'))
-            extended = True if 'extended' in arguments else False
-                
-
-            year = 2013
-            month = 6
-            day = 21
-            obj = {}
-            obj["extended"] = extended
             obj["lat"] = lat
             obj["lon"] = lon
 
+            extended = True if 'extended' in arguments else False
+            obj["extended"] = extended
+
+            now = datetime.datetime.now()
+            year = int(self.get_argument('year')) if 'year' in arguments else now.year
+            month = int(self.get_argument('month')) if 'month' in arguments else now.month
+            day = int(self.get_argument('day')) if 'day' in arguments else now.day
             obj["year"] = year
             obj["month"] = month
             obj["day"] = day
@@ -90,7 +74,7 @@ class SunHandler(tornado.web.RequestHandler):
 
             self.write(json.dumps(obj))
         else:
-            self.write('missing lat or lon')
+            self.write(json.dumps({'status':'error', 'message':'missing lat or lon'}))
 
 # RAMMING SPEEEEEEED!
 def main():
