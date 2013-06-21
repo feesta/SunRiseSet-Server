@@ -1,3 +1,8 @@
+Returns JSON with sunrise and sunset data for a given lat/lon.
+
+Currently hosted:
+http://vast-ravine-6427.herokuapp.com/
+
 Sample:
 http://vast-ravine-6427.herokuapp.com/?lat=37.7&lon=-122.4&year=2013&month=6&day=21&extended
 
