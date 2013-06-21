@@ -1,12 +1,3 @@
-#    Sample main.py Tornado file
-#    (for Tornado on Heroku)
-#
-#    Author: Mike Dory | dory.me
-#    Created: 11.12.11 | Updated: 06.02.13
-#    Contributions by Tedb0t, gregory80
-#
-# ------------------------------------------
-
 #!/usr/bin/env python
 import os.path
 import tornado.escape
