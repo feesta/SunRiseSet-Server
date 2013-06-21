@@ -1,5 +1,7 @@
 ## SunRiseSet-Server 
 Returns JSON with sunrise and sunset data for a given lat/lon.
+Uses https://github.com/mabroor/suncal for calculating times.
+All values are hours and all times are UTC.
 
 ##### Currently hosted:
 http://vast-ravine-6427.herokuapp.com/
