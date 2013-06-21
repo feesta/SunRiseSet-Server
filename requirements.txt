@@ -1,1 +1,4 @@
-Tornado==3.0.2
+distribute==0.6.34
+simplejson==3.3.0
+tornado==3.0.2
+wsgiref==0.1.2
