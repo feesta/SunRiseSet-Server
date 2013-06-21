@@ -1,6 +1,6 @@
 ## SunRiseSet-Server 
-Returns JSON with sunrise and sunset data for a given lat/lon.
-Uses https://github.com/mabroor/suncal for calculating times.
+Returns JSON with sunrise and sunset data for a given lat/lon.<br>
+Uses https://github.com/mabroor/suncal for calculating times.<br>
 All values are hours and all times are UTC.
 
 ##### Currently hosted:
