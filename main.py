@@ -9,12 +9,14 @@ from tornado import autoreload, websocket
 
 from Sun import Sun
 import simplejson as json
-import datetime
+import datetime, time
 
 # import and define tornado-y things
 from tornado.options import define
 define("port", default=5000, help="run on the given port", type=int)
 
+MINUTE = 60.0 # number of seconds in a minute
+HOUR = 3600.0 # number of seconds in an hour
 
 # application settings and handle mapping info
 class Application(tornado.web.Application):
@@ -51,9 +53,16 @@ class MainHandler(tornado.web.RequestHandler):
             obj["month"] = month
             obj["day"] = day
 
+            dt = datetime.datetime(year, month, day)
+            day_seconds = time.mktime(dt.timetuple())
+
+            obj["day_seconds"] = day_seconds
             obj["sunrise"], obj["sunset"] = Sun.sunRiseSet(year, month, day, lon, lat)
+            obj["sunrise_seconds"] = int(obj["sunrise"] * HOUR + day_seconds)
             obj["sunRiseSet"] = Sun.sunRiseSet(year, month, day, lon, lat)
+            obj["sunset_seconds"] = int(obj["sunset"] * HOUR + day_seconds)
             obj["dayLength"] = Sun.dayLength(year, month, day, lon, lat)
+            obj["dayLength_seconds"] = int(obj["dayLength"] * HOUR)
 
             if extended is True:
                 obj["aviationTime"] = Sun.aviationTime(year, month, day, lon, lat)
@@ -72,13 +81,11 @@ class MainHandler(tornado.web.RequestHandler):
             obj['arguments optional'] = 'extended, year, month, day'
             self.write(json.dumps(obj))
 
-# RAMMING SPEEEEEEED!
 def main():
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(tornado.options.options.port)
 
-    # start it up
     ioloop = tornado.ioloop.IOLoop.instance()
     autoreload.start(ioloop)
     ioloop.start()
